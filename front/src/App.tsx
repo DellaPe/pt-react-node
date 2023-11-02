@@ -1,22 +1,12 @@
+import { type JSX } from 'react'
 import './App.css'
-import { useState } from 'react'
 
-type ItemId = `${string}-${string}-${string}-${string}-${string}`
+import { ListItemsIndex } from './components/ListItems'
+import { useItems } from './hooks/useItmes'
+import { type ItemId } from './types/list-items'
 
-interface Item {
-  id: ItemId
-  timestamp: number
-  name: string
-}
-
-const INITIAL_ITEMS: Item[] = [
-  { id: crypto.randomUUID(), timestamp: Date.now(), name: 'Elemento 1' },
-  { id: crypto.randomUUID(), timestamp: Date.now(), name: 'Elemento 2' },
-  { id: crypto.randomUUID(), timestamp: Date.now(), name: 'Elemento 3' },
-]
-
-function App() {
-  const [items, setItems] = useState(INITIAL_ITEMS)
+function App (): JSX.Element {
+  const { items, deleteItem, addItem } = useItems()
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -24,55 +14,33 @@ function App() {
     const input = elements.namedItem('item')
     const isInput = input instanceof HTMLInputElement
     if (!isInput) return
-    const newItem: Item = {
-      id: crypto.randomUUID(),
-      timestamp: Date.now(),
-      name: input.value,
-    }
-    setItems([...items, newItem])
+    addItem(input.value)
     input.value = ''
   }
 
   const handleDelete = (id: ItemId) => () => {
-    setItems(items.filter(item => item.id !== id))
+    deleteItem(id)
   }
 
   return (
     <main>
-      
+
       <aside>
       <h1>Prueba técnica React</h1>
 
       <h2>Añadir y eliminar elementos</h2>
-      
-        <form onSubmit={handleSubmit}>
+
+        <form aria-label='Add element' onSubmit={handleSubmit}>
           <label>
             Elemento a introducir:
-            <input name="item" type="text" required placeholder='Nombre' />
           </label>
 
+          <input name="item" type="text" required placeholder='Nombre' />
           <button>Añadir</button>
         </form>
       </aside>
 
-      <section>
-        <h2>Lista</h2>
-        {
-          items.length === 0 ? <p>No hay elementos</p> : 
-          <ul>
-            {
-              items.map(item => {
-                return (
-                  <li key={item.id}>
-                    {item.name}
-                    <button onClick={handleDelete(item.id)}>Eliminar</button>
-                  </li>
-                )
-              })
-            }
-          </ul>
-        }
-      </section>
+      <ListItemsIndex items={items} handleDelete={handleDelete} />
     </main>
   )
 }
